@@ -1,16 +1,72 @@
-# React + Vite
+# Distributed Task Queue System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-style backend platform for managing asynchronous background tasks using FastAPI, Celery, Redis, PostgreSQL, Docker, and a React dashboard.
 
-Currently, two official plugins are available:
+This system handles long-running tasks like email sending, web scraping, and PDF report generation without blocking the main application, while providing real-time monitoring and task tracking.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- Asynchronous background task execution
+- Priority-based task queues (High / Medium / Low)
+- Automatic retries with exponential backoff
+- Task cancellation support
+- Real-time task status updates using WebSockets
+- Redis as message broker
+- PostgreSQL for persistent task storage
+- Flower dashboard for Celery monitoring
+- React + Vite frontend dashboard for live monitoring
+- Dockerized multi-service architecture
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+## Tech Stack
+
+### Backend
+- FastAPI
+- Celery
+- Redis
+- PostgreSQL
+- SQLAlchemy
+- WebSockets
+- SMTP (Email Sending)
+- BeautifulSoup (Web Scraping)
+- ReportLab (PDF Generation)
+
+### Frontend
+- React
+- Vite
+- Tailwind CSS
+- Recharts
+
+### DevOps
+- Docker
+- Docker Compose
+
+
+## Supported Tasks
+
+### Send Email
+Sends real emails using Gmail SMTP.
+
+### Scrape Webpage
+Extracts title, headings, links, and metadata using BeautifulSoup.
+
+### Generate PDF Report
+Creates structured PDF reports using ReportLab.
+
+---
+
+## Project Structure
+
+```text
+Distributed_Task_Queue_System/
+│
+├── api/            # FastAPI backend
+├── workers/        # Celery workers
+├── dashboard/      # React frontend dashboard
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
