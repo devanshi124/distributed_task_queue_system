@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: taskuser
+      POSTGRES_PASSWORD: taskpass
+      POSTGRES_DB: taskqueue
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskuser -d taskqueue"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://taskuser:taskpass@postgres:5432/taskqueue
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://taskuser:taskpass@postgres:5432/taskqueue
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      # ── Email config ──
+      SMTP_EMAIL: ${SMTP_EMAIL:-your_gmail@gmail.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-your_app_password_here}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - reports_data:/app/reports
+    command: ["python", "-m", "celery", "-A", "tasks", "worker", "--loglevel=info", "-P", "solo"]
+
+  flower:
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - redis
+    command: ["python", "-m", "celery", "-A", "tasks", "flower", "--port=5555"]
+
+volumes:
+  redis_data:
+  pg_data:
+  reports_data:
