@@ -1,0 +1,7 @@
+{
+  "name": "task-queue-dashboard",
+  "version": "0.1.0",
+  "dependencies": {
+    "vite": "^5.4.8"
+  }
+}
